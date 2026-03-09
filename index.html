@@ -65,9 +65,9 @@
   /* Bottom row: name BIG, username same size smaller weight, mgr smaller still */
   .tag-bottom{padding:3px 2px 2px;display:flex;flex-direction:column;gap:1px;}
   .tag-name-line{display:flex;align-items:baseline;gap:6px;}
-  .tag-name{font-family:'IBM Plex Mono',monospace;font-size:.82rem;font-weight:700;color:#fff;letter-spacing:.3px;}
-  .tag-username{font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:400;color:#fff;letter-spacing:.3px;opacity:.75;}
-  .tag-manager{font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:400;color:rgba(255,255,255,.5);letter-spacing:.2px;}
+  .tag-name{font-family:'IBM Plex Mono',monospace;font-size:.82rem;font-weight:700;color:#fff;letter-spacing:.3px;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}
+  .tag-username{font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:700;color:#fff;letter-spacing:.3px;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}
+  .tag-manager{font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:700;color:#fff;letter-spacing:.2px;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}
 
   .saved-wrap{width:100%;}
   .saved-header{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
@@ -475,16 +475,28 @@ function tagDocxXml(tag, imgRid) {
     '<w:vAlign w:val="center"/></w:tcPr>' +
     '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>' +
     '<w:r><w:rPr><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="22"/><w:szCs w:val="22"/>' +
-    '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
+    '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>' +
+    '<w14:textOutline w14:w="12700" w14:cap="rnd" w14:cmpd="sng" w14:algn="ctr">' +
+    '<w14:solidFill><w14:srgbClr w14:val="000000"/></w14:solidFill>' +
+    '<w14:prstDash w14:val="solid"/></w14:textOutline>' +
+    '</w:rPr>' +
     '<w:t xml:space="preserve">' + escXml(tag.name) + '</w:t></w:r>' +
     (tag.username
       ? '<w:r><w:rPr><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="22"/><w:szCs w:val="22"/>' +
-        '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
+        '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>' +
+        '<w14:textOutline w14:w="12700" w14:cap="rnd" w14:cmpd="sng" w14:algn="ctr">' +
+        '<w14:solidFill><w14:srgbClr w14:val="000000"/></w14:solidFill>' +
+        '<w14:prstDash w14:val="solid"/></w14:textOutline>' +
+        '</w:rPr>' +
         '<w:t xml:space="preserve">  ' + escXml(tag.username) + '</w:t></w:r>'
       : '') +
     (tag.manager
       ? '<w:r><w:rPr><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="22"/><w:szCs w:val="22"/>' +
-        '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
+        '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>' +
+        '<w14:textOutline w14:w="12700" w14:cap="rnd" w14:cmpd="sng" w14:algn="ctr">' +
+        '<w14:solidFill><w14:srgbClr w14:val="000000"/></w14:solidFill>' +
+        '<w14:prstDash w14:val="solid"/></w14:textOutline>' +
+        '</w:rPr>' +
         '<w:t xml:space="preserve">  MGR: ' + escXml(tag.manager) + '</w:t></w:r>'
       : '') +
     '</w:p></w:tc>';
