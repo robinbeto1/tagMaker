@@ -11,7 +11,6 @@
     --bg:#1a1a1a;--panel:#242424;--border:#333;
     --text:#e8e8e8;--muted:#888;--accent:#f5c842;
     --blue-btn:#4a9eff;--tag-blue:#1a4a8a;--tag-blue-filled:#0d2e5e;
-    /* trained dept highlight — bright yellow on dark, very readable */
     --trained-bg:#f5c842;--trained-text:#1a1a1a;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -25,18 +24,10 @@
   input[type="text"]{width:100%;background:#111;border:1px solid var(--border);color:var(--text);padding:8px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:0.88rem;border-radius:2px;margin-bottom:12px;outline:none;transition:border-color 0.2s;}
   input[type="text"]:focus{border-color:var(--green-light);}
   .dept-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:16px;}
-  .dept-btn{
-    padding:7px 4px;border:1px solid var(--border);background:#111;
-    color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:0.68rem;
-    letter-spacing:0.5px;cursor:pointer;border-radius:2px;transition:all 0.12s;
-    text-align:center;user-select:none;
-  }
+  .dept-btn{padding:7px 4px;border:1px solid var(--border);background:#111;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:0.68rem;letter-spacing:0.5px;cursor:pointer;border-radius:2px;transition:all 0.12s;text-align:center;user-select:none;}
   .dept-btn:hover{border-color:#666;color:var(--text);}
-  .dept-btn.active{
-    background:var(--trained-bg);border-color:#d4a800;
-    color:var(--trained-text);font-weight:700;
-  }
-  .photo-area{width:100%;aspect-ratio:3/4;background:#111;border:2px dashed var(--border);border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-bottom:12px;overflow:hidden;position:relative;transition:border-color 0.2s;max-height:160px;}
+  .dept-btn.active{background:var(--trained-bg);border-color:#d4a800;color:var(--trained-text);font-weight:700;}
+  .photo-area{width:100%;background:#111;border:2px dashed var(--border);border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-bottom:12px;overflow:hidden;position:relative;transition:border-color 0.2s;height:130px;}
   .photo-area:hover{border-color:var(--green-light);}
   .photo-area img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;}
   .photo-placeholder{color:var(--muted);font-size:0.68rem;letter-spacing:1px;text-align:center;font-family:'IBM Plex Mono',monospace;}
@@ -55,39 +46,32 @@
   .type-btn.on-green{border-color:var(--green-light);background:var(--green-filled);color:#fff;}
   .type-btn.on-blue{border-color:var(--blue-btn);background:var(--tag-blue-filled);color:#7ec8ff;}
 
-  /* ── Preview tag (compact) ── */
+  /* ── Preview tag ── */
   .preview-wrap{display:flex;flex-direction:column;align-items:center;gap:20px;}
-  .tag-container{background:#2a2a2a;border:1px solid var(--border);border-radius:4px;padding:24px;display:flex;flex-direction:column;align-items:center;}
-  .name-tag{width:420px;background:var(--green);border-radius:5px;padding:6px;display:flex;gap:6px;box-shadow:0 6px 24px rgba(0,0,0,.5);}
-  .name-tag.blue-tag{background:var(--tag-blue);}
-  .tag-photo{width:68px;min-width:68px;border-radius:3px;overflow:hidden;}
-  .tag-photo img{width:68px;height:84px;object-fit:cover;display:block;}
-  .tag-photo-placeholder{width:68px;height:84px;background:#bbb;display:flex;align-items:center;justify-content:center;color:#666;font-size:1.5rem;}
-  .tag-body{flex:1;display:flex;flex-direction:column;gap:4px;}
-  .tag-rows{display:flex;flex-direction:column;gap:3px;}
-  .tag-row{display:flex;gap:3px;}
-  .tag-cell{
-    background:rgba(255,255,255,.12);border-radius:2px;padding:3px 2px;
-    font-size:.48rem;letter-spacing:.5px;text-transform:uppercase;
-    color:rgba(255,255,255,.4);text-align:center;flex:1;min-height:20px;
-    display:flex;align-items:center;justify-content:center;
-    font-family:'IBM Plex Mono',monospace;
-  }
-  .tag-cell.trained{
-    background:var(--trained-bg);color:var(--trained-text);
-    font-weight:700;
-  }
-  .tag-name-row{display:flex;justify-content:space-between;align-items:baseline;padding:3px 2px 1px;}
-  .tag-name{font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:700;color:#fff;letter-spacing:.5px;}
-  .tag-username{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.6);}
-  .tag-manager-row{padding:1px 2px 2px;}
-  .tag-manager{font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.5);}
+  .tag-container{background:#2a2a2a;border:1px solid var(--border);border-radius:4px;padding:20px;display:flex;flex-direction:column;align-items:center;}
 
-  /* saved */
+  /* Tag sized to match the blue one in screenshot */
+  .name-tag{width:380px;background:var(--green);border-radius:4px;padding:5px;display:flex;gap:5px;box-shadow:0 4px 18px rgba(0,0,0,.5);}
+  .name-tag.blue-tag{background:var(--tag-blue);}
+  .tag-photo{width:58px;min-width:58px;border-radius:2px;overflow:hidden;}
+  .tag-photo img{width:58px;height:72px;object-fit:cover;display:block;}
+  .tag-photo-placeholder{width:58px;height:72px;background:#bbb;display:flex;align-items:center;justify-content:center;color:#666;font-size:1.2rem;}
+  .tag-body{flex:1;display:flex;flex-direction:column;gap:3px;}
+  .tag-rows{display:flex;flex-direction:column;gap:2px;}
+  .tag-row{display:flex;gap:2px;}
+  .tag-cell{background:rgba(255,255,255,.12);border-radius:1px;padding:2px;font-size:.42rem;letter-spacing:.3px;text-transform:uppercase;color:rgba(255,255,255,.38);text-align:center;flex:1;min-height:18px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;}
+  .tag-cell.trained{background:var(--trained-bg);color:var(--trained-text);font-weight:700;}
+
+  /* Bottom row: name BIG, username same size smaller weight, mgr smaller still */
+  .tag-bottom{padding:3px 2px 2px;display:flex;flex-direction:column;gap:1px;}
+  .tag-name-line{display:flex;align-items:baseline;gap:6px;}
+  .tag-name{font-family:'IBM Plex Mono',monospace;font-size:.82rem;font-weight:700;color:#fff;letter-spacing:.3px;}
+  .tag-username{font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:400;color:#fff;letter-spacing:.3px;opacity:.75;}
+  .tag-manager{font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:400;color:rgba(255,255,255,.5);letter-spacing:.2px;}
+
   .saved-wrap{width:100%;}
   .saved-header{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
   .saved-tags{display:flex;flex-wrap:wrap;gap:16px;}
-
   .toast{position:fixed;bottom:24px;right:24px;background:#1a4d22;border:1px solid var(--green-light);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:.75rem;padding:10px 18px;border-radius:4px;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:999;}
   .toast.show{opacity:1;transform:translateY(0);}
 </style>
@@ -101,37 +85,29 @@
   <div>
     <div class="panel">
       <h2>Associate Info</h2>
-
       <label>Last Name, First Name</label>
       <input type="text" id="fullName" placeholder="e.g. patel, jinalben" oninput="updatePreview()">
-
       <label>Username / ID</label>
       <input type="text" id="username" placeholder="e.g. jinalbee" oninput="updatePreview()">
-
       <label>Manager Name</label>
       <input type="text" id="manager" placeholder="e.g. smith, john" oninput="updatePreview()">
-
       <label>Employment Type</label>
       <div class="type-wrap">
         <button id="typeTemp" class="type-btn on-green" onclick="setType('temp')">🟢 Seasonal / Temp</button>
         <button id="typePerm" class="type-btn" onclick="setType('perm')">🔵 Permanent</button>
       </div>
-
       <label>Photo (optional)</label>
       <div class="photo-area" id="photoArea" onclick="document.getElementById('photoInput').click()">
         <div class="photo-placeholder"><div class="icon">📷</div><div>Click to upload</div></div>
       </div>
       <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(event)">
-
       <label>Departments Trained In</label>
       <div class="dept-grid" id="deptGrid"></div>
-
       <button class="btn btn-green" onclick="saveTag()">＋ Save Tag</button>
       <button class="btn btn-dl" id="downloadBtn" onclick="downloadDocx()" disabled>⬇ Download Saved Tags (.docx)</button>
       <button class="btn btn-outline" onclick="window.print()">🖨 Print Preview</button>
     </div>
   </div>
-
   <div>
     <div class="panel">
       <h2>Live Preview</h2>
@@ -147,7 +123,6 @@
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -160,7 +135,6 @@ let photoDataUrl = null;
 let savedTags = [];
 let isPermanent = false;
 
-// Build dept buttons
 const grid = document.getElementById('deptGrid');
 DEPARTMENTS.forEach(key => {
   const btn = document.createElement('button');
@@ -202,9 +176,6 @@ function buildTagHTML(name, username, manager, depts, photo, perm) {
   const photoHTML = photo
     ? '<div class="tag-photo"><img src="' + photo + '"></div>'
     : '<div class="tag-photo"><div class="tag-photo-placeholder">👤</div></div>';
-  const mgrLine = manager
-    ? '<div class="tag-manager-row"><span class="tag-manager">MGR: ' + manager + '</span></div>'
-    : '';
   return '<div class="name-tag' + (perm ? ' blue-tag' : '') + '">'
     + photoHTML
     + '<div class="tag-body">'
@@ -212,11 +183,13 @@ function buildTagHTML(name, username, manager, depts, photo, perm) {
     + '<div class="tag-row">' + ROW1.map(k => cellHTML(k, depts)).join('') + '</div>'
     + '<div class="tag-row">' + ROW2.map(k => cellHTML(k, depts)).join('') + '</div>'
     + '</div>'
-    + '<div class="tag-name-row">'
+    + '<div class="tag-bottom">'
+    + '<div class="tag-name-line">'
     + '<span class="tag-name">' + (name || 'last, first') + '</span>'
     + '<span class="tag-username">' + (username || 'id') + '</span>'
     + '</div>'
-    + mgrLine
+    + (manager ? '<div class="tag-manager">MGR: ' + manager + '</div>' : '')
+    + '</div>'
     + '</div>'
     + '</div>';
 }
@@ -245,7 +218,7 @@ function saveTag() {
     username: document.getElementById('username').value.trim(),
     manager:  document.getElementById('manager').value.trim(),
     depts:    new Set(selectedDepts),
-    photo:    photoDataUrl,
+    photo:    photoDataUrl,   // store full data URL — embedded in docx
     permanent: isPermanent
   });
   renderSaved();
@@ -267,11 +240,11 @@ function renderSaved() {
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:inline-flex;flex-direction:column;gap:4px;align-items:center;';
     const tagDiv = document.createElement('div');
-    tagDiv.style.cssText = 'transform:scale(0.45);transform-origin:top left;margin-bottom:-64px;margin-right:-232px;';
+    tagDiv.style.cssText = 'transform:scale(0.5);transform-origin:top left;margin-bottom:-60px;margin-right:-192px;';
     tagDiv.innerHTML = buildTagHTML(tag.name, tag.username, tag.manager, tag.depts, tag.photo, tag.permanent);
     const del = document.createElement('button');
     del.textContent = '✕ Remove';
-    del.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:.6rem;background:transparent;border:1px solid #444;color:#888;padding:2px 8px;cursor:pointer;border-radius:2px;margin-top:62px;';
+    del.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:.6rem;background:transparent;border:1px solid #444;color:#888;padding:2px 8px;cursor:pointer;border-radius:2px;margin-top:58px;';
     del.onclick = () => { savedTags.splice(i, 1); renderSaved(); };
     wrap.appendChild(tagDiv);
     wrap.appendChild(del);
@@ -279,7 +252,7 @@ function renderSaved() {
   });
 }
 
-// ─── Native ZIP writer (zero dependencies) ───────────────────────────────────
+// ─── Native ZIP writer ────────────────────────────────────────────────────────
 
 function crc32(data) {
   if (!crc32._t) {
@@ -317,7 +290,6 @@ function buildZip(files) {
       ...u16(name.length), 0x00,0x00,
       ...name
     ]);
-
     const central = new Uint8Array([
       0x50,0x4b,0x01,0x02, 0x3f,0x00, 0x14,0x00, 0x00,0x00, 0x00,0x00,
       0x00,0x00, 0x21,0x00,
@@ -333,13 +305,11 @@ function buildZip(files) {
     offset += local.length + sz;
   }
 
-  const cdSize   = centralEntries.reduce((s, c) => s + c.length, 0);
-  const cdOffset = offset;
+  const cdSize = centralEntries.reduce((s, c) => s + c.length, 0);
   const eocd = new Uint8Array([
     0x50,0x4b,0x05,0x06, 0x00,0x00, 0x00,0x00,
     ...u16(files.length), ...u16(files.length),
-    ...u32(cdSize), ...u32(cdOffset),
-    0x00,0x00
+    ...u32(cdSize), ...u32(offset), 0x00,0x00
   ]);
 
   const total = offset + cdSize + eocd.length;
@@ -354,21 +324,89 @@ function buildZip(files) {
   return out;
 }
 
-// ─── DOCX XML — tag card only, compact, 4 per page ───────────────────────────
+// ─── Photo helpers ────────────────────────────────────────────────────────────
+
+// Convert dataURL → { base64: string, mediaType: string, ext: string }
+function parseDataUrl(dataUrl) {
+  const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!m) return null;
+  const mediaType = m[1];
+  const base64 = m[2];
+  const ext = mediaType.includes('png') ? 'png' : mediaType.includes('gif') ? 'gif' : 'jpeg';
+  return { base64, mediaType, ext };
+}
+
+// base64 string → Uint8Array
+function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+// Resize image to max 200×250 px (keeps aspect), returns new dataURL
+function resizePhoto(dataUrl, maxW, maxH) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.src = dataUrl;
+  });
+}
+
+// ─── DOCX XML builders ────────────────────────────────────────────────────────
 
 function escXml(s) {
   return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function tagDocxXml(tag) {
-  const perm  = tag.permanent;
-  const BASE  = perm ? '1A4A8A' : '2D7A3A';
-  const DARK  = perm ? '0D2E5E' : '1A5C26';
-  // Trained cells: bright yellow (#F5C842) text on dark — very readable
-  const TRFILL = 'F5C842';
-  const TRTEXT = '1A1A1A';
-  const UNFILL = perm ? 'B8D4F0' : 'C8E6C9';
-  const UNTEXT = perm ? '0d2e5e' : '2d5a35';
+// imgRid = relationship ID for this tag's image (e.g. "rId2"), or null
+// imgW, imgH = EMUs (1 inch = 914400 EMU, 1 cm = 360000 EMU)
+function drawingXml(imgRid, widthEmu, heightEmu) {
+  if (!imgRid) return '';
+  return '<w:drawing>' +
+    '<wp:inline distT="0" distB="0" distL="0" distR="0"' +
+    ' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">' +
+    '<wp:extent cx="' + widthEmu + '" cy="' + heightEmu + '"/>' +
+    '<wp:effectExtent l="0" t="0" r="0" b="0"/>' +
+    '<wp:docPr id="1" name="photo"/>' +
+    '<wp:cNvGraphicFramePr>' +
+    '<a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>' +
+    '</wp:cNvGraphicFramePr>' +
+    '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">' +
+    '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+    '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+    '<pic:nvPicPr><pic:cNvPr id="1" name="photo"/><pic:cNvPicPr/></pic:nvPicPr>' +
+    '<pic:blipFill>' +
+    '<a:blip r:embed="' + imgRid + '" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>' +
+    '<a:stretch><a:fillRect/></a:stretch>' +
+    '</pic:blipFill>' +
+    '<pic:spPr>' +
+    '<a:xfrm><a:off x="0" y="0"/><a:ext cx="' + widthEmu + '" cy="' + heightEmu + '"/></a:xfrm>' +
+    '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>' +
+    '</pic:spPr>' +
+    '</pic:pic>' +
+    '</a:graphicData>' +
+    '</a:graphic>' +
+    '</wp:inline>' +
+    '</w:drawing>';
+}
+
+function tagDocxXml(tag, imgRid) {
+  const perm    = tag.permanent;
+  const BASE    = perm ? '1A4A8A' : '2D7A3A';
+  const DARK    = perm ? '0D2E5E' : '1A5C26';
+  const TRFILL  = 'F5C842';
+  const TRTEXT  = '1A1A1A';
+  const UNFILL  = perm ? 'B8D4F0' : 'C8E6C9';
+  const UNTEXT  = perm ? '0D2E5E' : '2D5A35';
 
   function nb() {
     return '<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
@@ -377,7 +415,7 @@ function tagDocxXml(tag) {
            '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>';
   }
 
-  function cell(key, trained, blank) {
+  function deptCell(key, trained, blank) {
     const fill = blank ? BASE : (trained ? TRFILL : UNFILL);
     const fc   = trained ? TRTEXT : UNTEXT;
     const bold = trained ? '<w:b/>' : '';
@@ -385,94 +423,118 @@ function tagDocxXml(tag) {
       ? '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
       : '<w:right w:val="single" w:sz="3" w:space="0" w:color="' + BASE + '"/>';
     return '<w:tc><w:tcPr>' +
-      '<w:tcW w:w="740" w:type="dxa"/>' +
+      '<w:tcW w:w="720" w:type="dxa"/>' +
       '<w:tcBorders><w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
       '<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
       '<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>' + rb + '</w:tcBorders>' +
       '<w:shd w:val="clear" w:color="auto" w:fill="' + fill + '"/>' +
-      '<w:tcMar><w:top w:w="40" w:type="dxa"/><w:left w:w="40" w:type="dxa"/>' +
-      '<w:bottom w:w="40" w:type="dxa"/><w:right w:w="40" w:type="dxa"/></w:tcMar>' +
+      '<w:tcMar><w:top w:w="30" w:type="dxa"/><w:left w:w="30" w:type="dxa"/>' +
+      '<w:bottom w:w="30" w:type="dxa"/><w:right w:w="30" w:type="dxa"/></w:tcMar>' +
       '<w:vAlign w:val="center"/></w:tcPr>' +
       '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>' +
       '<w:r><w:rPr>' + bold + '<w:color w:val="' + fc + '"/>' +
-      '<w:sz w:val="12"/><w:szCs w:val="12"/>' +
+      '<w:sz w:val="11"/><w:szCs w:val="11"/>' +
       '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
       '<w:t>' + escXml(blank ? '' : key) + '</w:t></w:r></w:p></w:tc>';
   }
 
+  // Photo column — shows embedded image if available, else placeholder text
   function photoCol(cont) {
+    const inner = cont ? '<w:p/>' : (
+      imgRid
+        ? '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>' +
+          '<w:r>' + drawingXml(imgRid, 630000, 810000) + '</w:r></w:p>'
+        : '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>' +
+          '<w:r><w:rPr><w:color w:val="BBBBBB"/><w:sz w:val="12"/>' +
+          '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
+          '<w:t>[ photo ]</w:t></w:r></w:p>'
+    );
     return '<w:tc><w:tcPr>' +
-      '<w:tcW w:w="900" w:type="dxa"/>' +
+      '<w:tcW w:w="860" w:type="dxa"/>' +
       (cont ? '<w:vMerge/>' : '<w:vMerge w:val="restart"/>') +
       '<w:tcBorders>' + nb() + '</w:tcBorders>' +
       '<w:shd w:val="clear" w:color="auto" w:fill="' + BASE + '"/>' +
-      '<w:tcMar><w:top w:w="60" w:type="dxa"/><w:left w:w="60" w:type="dxa"/>' +
-      '<w:bottom w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tcMar>' +
-      '<w:vAlign w:val="center"/></w:tcPr>' +
-      (cont ? '<w:p/>' :
-        '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>' +
-        '<w:r><w:rPr><w:color w:val="AAAAAA"/><w:sz w:val="14"/>' +
-        '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
-        '<w:t>[ photo ]</w:t></w:r></w:p>') +
-      '</w:tc>';
+      '<w:tcMar><w:top w:w="40" w:type="dxa"/><w:left w:w="40" w:type="dxa"/>' +
+      '<w:bottom w:w="40" w:type="dxa"/><w:right w:w="40" w:type="dxa"/></w:tcMar>' +
+      '<w:vAlign w:val="center"/></w:tcPr>' + inner + '</w:tc>';
   }
 
-  const r1 = ROW1.map(k => cell(k, tag.depts.has(k), false)).join('');
-  const r2 = ROW2.map(k => k === '' ? cell('', false, true) : cell(k, tag.depts.has(k), false)).join('');
+  const r1 = ROW1.map(k => deptCell(k, tag.depts.has(k), false)).join('');
+  const r2 = ROW2.map(k => k === '' ? deptCell('', false, true) : deptCell(k, tag.depts.has(k), false)).join('');
 
-  // Name + username + manager row (spans full width)
-  const nameSpan =
+  // Total width: 860 + 7×720 = 860+5040 = 5900 dxa
+  // Name row spans all 8 cols
+  const nameRow =
     '<w:tc><w:tcPr>' +
-    '<w:tcW w:w="6080" w:type="dxa"/>' +
+    '<w:tcW w:w="5900" w:type="dxa"/>' +
     '<w:gridSpan w:val="8"/>' +
     '<w:tcBorders>' + nb() + '</w:tcBorders>' +
     '<w:shd w:val="clear" w:color="auto" w:fill="' + BASE + '"/>' +
-    '<w:tcMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/>' +
-    '<w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tcMar>' +
+    '<w:tcMar><w:top w:w="50" w:type="dxa"/><w:left w:w="80" w:type="dxa"/>' +
+    '<w:bottom w:w="50" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tcMar>' +
     '<w:vAlign w:val="center"/></w:tcPr>' +
+    // Name (large, bold, white) + username (same size, normal weight, white 75%)
     '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>' +
-    '<w:r><w:rPr><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="20"/>' +
+    '<w:r><w:rPr><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="22"/><w:szCs w:val="22"/>' +
     '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
     '<w:t xml:space="preserve">' + escXml(tag.name) + '</w:t></w:r>' +
-    '<w:r><w:rPr><w:color w:val="CCCCCC"/><w:sz w:val="16"/>' +
-    '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
-    '<w:t xml:space="preserve">  ' + escXml(tag.username || '') + '</w:t></w:r>' +
-    (tag.manager ? '<w:r><w:rPr><w:color w:val="AAAAAA"/><w:sz w:val="14"/>' +
-    '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
-    '<w:t xml:space="preserve">  MGR: ' + escXml(tag.manager) + '</w:t></w:r>' : '') +
+    (tag.username
+      ? '<w:r><w:rPr><w:color w:val="DDDDDD"/><w:sz w:val="20"/><w:szCs w:val="20"/>' +
+        '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
+        '<w:t xml:space="preserve">  ' + escXml(tag.username) + '</w:t></w:r>'
+      : '') +
+    (tag.manager
+      ? '<w:r><w:rPr><w:color w:val="AAAAAA"/><w:sz w:val="16"/><w:szCs w:val="16"/>' +
+        '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
+        '<w:t xml:space="preserve">  MGR: ' + escXml(tag.manager) + '</w:t></w:r>'
+      : '') +
     '</w:p></w:tc>';
 
-  // Compact table: col widths = 900 + 7×740 = 900+5180 = 6080
   return '<w:tbl>' +
     '<w:tblPr>' +
-    '<w:tblW w:w="6080" w:type="dxa"/>' +
-    '<w:tblBorders><w:insideH w:val="none"/><w:insideV w:val="none"/>' +
-    '<w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/></w:tblBorders>' +
+    '<w:tblW w:w="5900" w:type="dxa"/>' +
+    '<w:tblBorders>' +
+    '<w:top w:val="none"/><w:left w:val="none"/>' +
+    '<w:bottom w:val="none"/><w:right w:val="none"/>' +
+    '<w:insideH w:val="none"/><w:insideV w:val="none"/>' +
+    '</w:tblBorders>' +
     '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>' +
     '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar>' +
     '</w:tblPr>' +
     '<w:tblGrid>' +
-    '<w:gridCol w:w="900"/><w:gridCol w:w="740"/><w:gridCol w:w="740"/>' +
-    '<w:gridCol w:w="740"/><w:gridCol w:w="740"/><w:gridCol w:w="740"/>' +
-    '<w:gridCol w:w="740"/><w:gridCol w:w="740"/>' +
+    '<w:gridCol w:w="860"/>' +
+    '<w:gridCol w:w="720"/><w:gridCol w:w="720"/><w:gridCol w:w="720"/>' +
+    '<w:gridCol w:w="720"/><w:gridCol w:w="720"/><w:gridCol w:w="720"/><w:gridCol w:w="720"/>' +
     '</w:tblGrid>' +
-    '<w:tr><w:trPr><w:trHeight w:val="300" w:hRule="exact"/></w:trPr>' + photoCol(false) + r1 + '</w:tr>' +
-    '<w:tr><w:trPr><w:trHeight w:val="300" w:hRule="exact"/></w:trPr>' + photoCol(true)  + r2 + '</w:tr>' +
-    '<w:tr><w:trPr><w:trHeight w:val="360" w:hRule="exact"/></w:trPr>' + nameSpan + '</w:tr>' +
+    '<w:tr><w:trPr><w:trHeight w:val="280" w:hRule="exact"/></w:trPr>' + photoCol(false) + r1 + '</w:tr>' +
+    '<w:tr><w:trPr><w:trHeight w:val="280" w:hRule="exact"/></w:trPr>' + photoCol(true)  + r2 + '</w:tr>' +
+    '<w:tr><w:trPr><w:trHeight w:val="340" w:hRule="exact"/></w:trPr>' + nameRow + '</w:tr>' +
     '</w:tbl>';
 }
 
-function buildDocumentXml(tags) {
-  // 4 tags per page, spacer paragraphs between
+// Build document.xml — needs tag list + array of imgRids (one per tag, null if no photo)
+function buildDocumentXml(tags, imgRids) {
+  // Add required namespaces for images
   const body = tags.map((tag, i) => {
-    const spacer = i > 0 ? '<w:p><w:pPr><w:spacing w:before="360" w:after="0"/></w:pPr></w:p>' : '';
+    const spacer = i > 0 ? '<w:p><w:pPr><w:spacing w:before="280" w:after="0"/></w:pPr></w:p>' : '';
     const pgBreak = (i < tags.length - 1 && (i + 1) % 4 === 0)
       ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : '';
-    return spacer + tagDocxXml(tag) + pgBreak;
+    return spacer + tagDocxXml(tag, imgRids[i]) + pgBreak;
   }).join('');
 
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    '<w:document' +
+    ' xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"' +
+    ' xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"' +
+    ' xmlns:o="urn:schemas-microsoft-com:office:office"' +
+    ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"' +
+    ' xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"' +
+    ' xmlns:v="urn:schemas-microsoft-com:vml"' +
+    ' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"' +
+    ' xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"' +
+    ' xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"' +
+    ' xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"' +
+    ' mc:Ignorable="w14 w15">' +
     '<w:body>' + body +
     '<w:sectPr>' +
     '<w:pgSz w:w="12240" w:h="15840"/>' +
@@ -481,25 +543,47 @@ function buildDocumentXml(tags) {
     '</w:body></w:document>';
 }
 
-const CONTENT_TYPES =
-  '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-  '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
-  '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
-  '<Default Extension="xml" ContentType="application/xml"/>' +
-  '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
-  '<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>' +
-  '</Types>';
+// Build word/_rels/document.xml.rels including image relationships
+function buildWordRels(imgRids, imgPaths) {
+  let rels =
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>';
+  for (let i = 0; i < imgRids.length; i++) {
+    rels += '<Relationship Id="' + imgRids[i] + '"' +
+      ' Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"' +
+      ' Target="' + imgPaths[i] + '"/>';
+  }
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    rels + '</Relationships>';
+}
 
-const RELS =
+// Build [Content_Types].xml including image overrides
+function buildContentTypes(imgExts) {
+  const defaults =
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>';
+  const overrides =
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    '<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>';
+  // Add image content types (only once per extension)
+  const seen = new Set();
+  let imgDefaults = '';
+  for (const ext of imgExts) {
+    if (!seen.has(ext)) {
+      seen.add(ext);
+      const ct = ext === 'png' ? 'image/png' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+      imgDefaults += '<Default Extension="' + ext + '" ContentType="' + ct + '"/>';
+    }
+  }
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    defaults + imgDefaults + overrides + '</Types>';
+}
+
+const ROOT_RELS =
   '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
   '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
   '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
-  '</Relationships>';
-
-const WORD_RELS =
-  '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-  '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-  '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>' +
   '</Relationships>';
 
 const SETTINGS =
@@ -507,6 +591,8 @@ const SETTINGS =
   '<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
   '<w:defaultTabStop w:val="720"/>' +
   '</w:settings>';
+
+// ─── Download ─────────────────────────────────────────────────────────────────
 
 async function downloadDocx() {
   if (!savedTags.length) return;
@@ -517,14 +603,45 @@ async function downloadDocx() {
 
   try {
     const enc = s => new TextEncoder().encode(s);
-    const zip = buildZip([
-      { name: '[Content_Types].xml',           data: enc(CONTENT_TYPES) },
-      { name: '_rels/.rels',                   data: enc(RELS) },
-      { name: 'word/document.xml',             data: enc(buildDocumentXml(savedTags)) },
-      { name: 'word/_rels/document.xml.rels',  data: enc(WORD_RELS) },
-      { name: 'word/settings.xml',             data: enc(SETTINGS) }
-    ]);
+    const zipFiles = [];
 
+    // Process photos — resize and convert to bytes
+    const imgRids   = [];  // relationship IDs per tag (null if no photo)
+    const imgPaths  = [];  // relative paths in word/ folder
+    const imgExts   = [];  // extensions for content types
+
+    for (let i = 0; i < savedTags.length; i++) {
+      const tag = savedTags[i];
+      if (tag.photo) {
+        // Resize to reasonable size first
+        const resized = await resizePhoto(tag.photo, 200, 250);
+        const parsed  = parseDataUrl(resized);
+        if (parsed) {
+          const rid  = 'rId' + (i + 2);   // rId2, rId3, ...
+          const path = 'media/img' + i + '.' + parsed.ext;
+          imgRids.push(rid);
+          imgPaths.push(path);
+          imgExts.push(parsed.ext);
+          zipFiles.push({ name: 'word/' + path, data: base64ToBytes(parsed.base64) });
+        } else {
+          imgRids.push(null);
+        }
+      } else {
+        imgRids.push(null);
+      }
+    }
+
+    // Filter only tags that actually have a rid
+    const usedRids  = imgRids.filter(Boolean);
+    const usedPaths = imgPaths;
+
+    zipFiles.push({ name: '[Content_Types].xml',          data: enc(buildContentTypes(imgExts)) });
+    zipFiles.push({ name: '_rels/.rels',                  data: enc(ROOT_RELS) });
+    zipFiles.push({ name: 'word/document.xml',            data: enc(buildDocumentXml(savedTags, imgRids)) });
+    zipFiles.push({ name: 'word/_rels/document.xml.rels', data: enc(buildWordRels(usedRids, usedPaths)) });
+    zipFiles.push({ name: 'word/settings.xml',            data: enc(SETTINGS) });
+
+    const zip = buildZip(zipFiles);
     const blob = new Blob([zip], {
       type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     });
