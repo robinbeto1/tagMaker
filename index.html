@@ -86,9 +86,9 @@
     <div class="panel">
       <h2>Associate Info</h2>
       <label>Last Name, First Name</label>
-      <input type="text" id="fullName" placeholder="e.g. smith, john" oninput="updatePreview()">
+      <input type="text" id="fullName" placeholder="e.g. patel, jinalben" oninput="updatePreview()">
       <label>Username / ID</label>
-      <input type="text" id="username" placeholder="e.g. smithj" oninput="updatePreview()">
+      <input type="text" id="username" placeholder="e.g. jinalbee" oninput="updatePreview()">
       <label>Manager Name</label>
       <input type="text" id="manager" placeholder="e.g. smith, john" oninput="updatePreview()">
       <label>Employment Type</label>
@@ -463,15 +463,24 @@ function tagDocxXml(tag, imgRid) {
   const r2 = ROW2.map(k => k === '' ? deptCell('', false, true) : deptCell(k, tag.depts.has(k), false)).join('');
 
   // Total width: 860 + 7×720 = 860+5040 = 5900 dxa
-  // Name row spans all 8 cols
-  const nameRow =
+  // Row 3: photo col continues (vMerge), name spans only the 7 dept cols
+  const photoColRow3 =
     '<w:tc><w:tcPr>' +
-    '<w:tcW w:w="5900" w:type="dxa"/>' +
-    '<w:gridSpan w:val="8"/>' +
+    '<w:tcW w:w="860" w:type="dxa"/>' +
+    '<w:vMerge/>' +
     '<w:tcBorders>' + nb() + '</w:tcBorders>' +
     '<w:shd w:val="clear" w:color="auto" w:fill="' + BASE + '"/>' +
-    '<w:tcMar><w:top w:w="50" w:type="dxa"/><w:left w:w="80" w:type="dxa"/>' +
-    '<w:bottom w:w="50" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tcMar>' +
+    '</w:tcPr><w:p/></w:tc>';
+
+  const nameRow =
+    photoColRow3 +
+    '<w:tc><w:tcPr>' +
+    '<w:tcW w:w="5040" w:type="dxa"/>' +
+    '<w:gridSpan w:val="7"/>' +
+    '<w:tcBorders>' + nb() + '</w:tcBorders>' +
+    '<w:shd w:val="clear" w:color="auto" w:fill="' + BASE + '"/>' +
+    '<w:tcMar><w:top w:w="50" w:type="dxa"/><w:left w:w="60" w:type="dxa"/>' +
+    '<w:bottom w:w="50" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tcMar>' +
     '<w:vAlign w:val="center"/></w:tcPr>' +
     '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>' +
     '<w:r><w:rPr><w:b/><w:color w:val="000000"/><w:sz w:val="22"/><w:szCs w:val="22"/>' +
