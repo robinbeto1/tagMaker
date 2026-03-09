@@ -86,11 +86,11 @@
     <div class="panel">
       <h2>Associate Info</h2>
       <label>Last Name, First Name</label>
-      <input type="text" id="fullName" oninput="updatePreview()">
+      <input type="text" id="fullName" placeholder="e.g. patel, jinalben" oninput="updatePreview()">
       <label>Username / ID</label>
-      <input type="text" id="username" oninput="updatePreview()">
+      <input type="text" id="username" placeholder="e.g. jinalbee" oninput="updatePreview()">
       <label>Manager Name</label>
-      <input type="text" id="manager" oninput="updatePreview()">
+      <input type="text" id="manager" placeholder="e.g. smith, john" oninput="updatePreview()">
       <label>Employment Type</label>
       <div class="type-wrap">
         <button id="typeTemp" class="type-btn on-green" onclick="setType('temp')">🟢 Seasonal / Temp</button>
@@ -188,7 +188,7 @@ function buildTagHTML(name, username, manager, depts, photo, perm) {
     + '<span class="tag-name">' + (name || 'last, first') + '</span>'
     + '<span class="tag-username">' + (username || 'id') + '</span>'
     + '</div>'
-    + (manager ? '<div class="tag-manager">' + manager + '</div>' : '')
+    + (manager ? '<div class="tag-manager">MGR: ' + manager + '</div>' : '')
     + '</div>'
     + '</div>'
     + '</div>';
@@ -517,8 +517,8 @@ function tagDocxXml(tag, imgRid) {
 function buildDocumentXml(tags, imgRids) {
   // Add required namespaces for images
   const body = tags.map((tag, i) => {
-    const spacer = i > 0 ? '<w:p><w:pPr><w:spacing w:before="280" w:after="0"/></w:pPr></w:p>' : '';
-    const pgBreak = (i < tags.length - 1 && (i + 1) % 4 === 0)
+    const spacer = i > 0 ? '<w:p><w:pPr><w:spacing w:before="120" w:after="0"/></w:pPr></w:p>' : '';
+    const pgBreak = (i < tags.length - 1 && (i + 1) % 8 === 0)
       ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : '';
     return spacer + tagDocxXml(tag, imgRids[i]) + pgBreak;
   }).join('');
