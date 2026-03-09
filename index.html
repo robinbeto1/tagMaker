@@ -126,9 +126,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const DEPARTMENTS = ['PICK','WS','PS','LA','SD','ARSAW','STOW','PACK','PP','PG','AFM','SINGLES','RECIEVE'];
-const ROW1 = ['PICK','WS','PS','LA','SD','ARSAW','STOW'];
-const ROW2 = ['PACK','PP','PG','','AFM','SINGLES','RECIEVE'];
+const DEPARTMENTS = ['PICK','WS','PS','SD','ARSAW','STOW','PACK','PP','PG','AFM','SINGLES','RECIEVE'];
+const ROW1 = ['PICK','WS','PS','SD','ARSAW','STOW'];
+const ROW2 = ['PACK','PP','PG','AFM','SINGLES','RECIEVE'];
 
 let selectedDepts = new Set();
 let photoDataUrl = null;
@@ -423,7 +423,7 @@ function tagDocxXml(tag, imgRid) {
       ? '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
       : '<w:right w:val="single" w:sz="3" w:space="0" w:color="' + BASE + '"/>';
     return '<w:tc><w:tcPr>' +
-      '<w:tcW w:w="720" w:type="dxa"/>' +
+      '<w:tcW w:w="840" w:type="dxa"/>' +
       '<w:tcBorders><w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
       '<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
       '<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>' + rb + '</w:tcBorders>' +
@@ -450,7 +450,7 @@ function tagDocxXml(tag, imgRid) {
           '<w:t>[ photo ]</w:t></w:r></w:p>'
     );
     return '<w:tc><w:tcPr>' +
-      '<w:tcW w:w="860" w:type="dxa"/>' +
+      '<w:tcW w:w="900" w:type="dxa"/>' +
       (cont ? '<w:vMerge/>' : '<w:vMerge w:val="restart"/>') +
       '<w:tcBorders>' + nb() + '</w:tcBorders>' +
       '<w:shd w:val="clear" w:color="auto" w:fill="' + BASE + '"/>' +
@@ -462,11 +462,11 @@ function tagDocxXml(tag, imgRid) {
   const r1 = ROW1.map(k => deptCell(k, tag.depts.has(k), false)).join('');
   const r2 = ROW2.map(k => k === '' ? deptCell('', false, true) : deptCell(k, tag.depts.has(k), false)).join('');
 
-  // Total width: 860 + 7×720 = 860+5040 = 5900 dxa
-  // Row 3: photo col continues (vMerge), name spans only the 7 dept cols
+  // Total width: 900 + 6×840 = 900+5040 = 5940 dxa
+  // Row 3: photo col continues (vMerge), name spans only the 6 dept cols
   const photoColRow3 =
     '<w:tc><w:tcPr>' +
-    '<w:tcW w:w="860" w:type="dxa"/>' +
+    '<w:tcW w:w="900" w:type="dxa"/>' +
     '<w:vMerge/>' +
     '<w:tcBorders>' + nb() + '</w:tcBorders>' +
     '<w:shd w:val="clear" w:color="auto" w:fill="' + BASE + '"/>' +
@@ -476,7 +476,7 @@ function tagDocxXml(tag, imgRid) {
     photoColRow3 +
     '<w:tc><w:tcPr>' +
     '<w:tcW w:w="5040" w:type="dxa"/>' +
-    '<w:gridSpan w:val="7"/>' +
+    '<w:gridSpan w:val="6"/>' +
     '<w:tcBorders>' + nb() + '</w:tcBorders>' +
     '<w:shd w:val="clear" w:color="auto" w:fill="' + BASE + '"/>' +
     '<w:tcMar><w:top w:w="50" w:type="dxa"/><w:left w:w="60" w:type="dxa"/>' +
@@ -500,7 +500,7 @@ function tagDocxXml(tag, imgRid) {
 
   return '<w:tbl>' +
     '<w:tblPr>' +
-    '<w:tblW w:w="5900" w:type="dxa"/>' +
+    '<w:tblW w:w="5940" w:type="dxa"/>' +
     '<w:tblBorders>' +
     '<w:top w:val="single" w:sz="12" w:space="0" w:color="000000"/>' +
     '<w:left w:val="single" w:sz="12" w:space="0" w:color="000000"/>' +
@@ -512,9 +512,9 @@ function tagDocxXml(tag, imgRid) {
     '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar>' +
     '</w:tblPr>' +
     '<w:tblGrid>' +
-    '<w:gridCol w:w="860"/>' +
-    '<w:gridCol w:w="720"/><w:gridCol w:w="720"/><w:gridCol w:w="720"/>' +
-    '<w:gridCol w:w="720"/><w:gridCol w:w="720"/><w:gridCol w:w="720"/><w:gridCol w:w="720"/>' +
+    '<w:gridCol w:w="900"/>' +
+    '<w:gridCol w:w="840"/><w:gridCol w:w="840"/><w:gridCol w:w="840"/>' +
+    '<w:gridCol w:w="840"/><w:gridCol w:w="840"/><w:gridCol w:w="840"/>' +
     '</w:tblGrid>' +
     '<w:tr><w:trPr><w:trHeight w:val="280" w:hRule="exact"/></w:trPr>' + photoCol(false) + r1 + '</w:tr>' +
     '<w:tr><w:trPr><w:trHeight w:val="280" w:hRule="exact"/></w:trPr>' + photoCol(true)  + r2 + '</w:tr>' +
