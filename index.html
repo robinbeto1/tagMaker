@@ -68,6 +68,10 @@
   .tag-name{font-family:'IBM Plex Mono',monospace;font-size:.82rem;font-weight:700;color:#000;letter-spacing:.3px;}
   .tag-username{font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:700;color:#000;letter-spacing:.3px;}
   .tag-manager{font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:700;color:#000;letter-spacing:.2px;}
+  .tag-days{display:flex;flex-wrap:wrap;gap:1px;padding:1px 2px 0;}
+  .tag-day-pill{background:#f5c842;color:#1a1a1a;font-family:'IBM Plex Mono',monospace;font-size:.36rem;font-weight:700;padding:0px 3px;border-radius:1px;letter-spacing:.2px;}
+  .day-btn{padding:5px 2px;border:1px solid var(--border);background:#111;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:0.62rem;cursor:pointer;border-radius:2px;transition:all 0.12s;text-align:center;user-select:none;}
+  .day-btn.active{background:#f5c842;border-color:#d4a800;color:#1a1a1a;font-weight:700;}
 
   .saved-wrap{width:100%;}
   .saved-header{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
@@ -95,6 +99,10 @@
       <div class="type-wrap">
         <button id="typeTemp" class="type-btn on-green" onclick="setType('temp')">🟢 Seasonal / Temp</button>
         <button id="typePerm" class="type-btn" onclick="setType('perm')">🔵 Permanent</button>
+      </div>
+      <div id="dayWrap" style="display:none;margin-bottom:12px;">
+        <label>Work Days</label>
+        <div id="dayGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;"></div>
       </div>
       <label>Photo (optional)</label>
       <div class="photo-area" id="photoArea" onclick="document.getElementById('photoInput').click()">
@@ -134,6 +142,7 @@ let selectedDepts = new Set();
 let photoDataUrl = null;
 let savedTags = [];
 let isPermanent = false;
+let selectedDays = new Set();
 
 const grid = document.getElementById('deptGrid');
 DEPARTMENTS.forEach(key => {
@@ -148,10 +157,27 @@ DEPARTMENTS.forEach(key => {
   grid.appendChild(btn);
 });
 
+// Build day toggle buttons
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const dayGrid = document.getElementById('dayGrid');
+DAYS.forEach(d => {
+  const btn = document.createElement('button');
+  btn.className = 'day-btn';
+  btn.textContent = d;
+  btn.onclick = () => {
+    selectedDays.has(d) ? selectedDays.delete(d) : selectedDays.add(d);
+    btn.classList.toggle('active', selectedDays.has(d));
+    updatePreview();
+  };
+  dayGrid.appendChild(btn);
+});
+
 function setType(type) {
   isPermanent = type === 'perm';
   document.getElementById('typeTemp').className = 'type-btn' + (!isPermanent ? ' on-green' : '');
   document.getElementById('typePerm').className = 'type-btn' + (isPermanent ? ' on-blue' : '');
+  document.getElementById('dayWrap').style.display = isPermanent ? 'block' : 'none';
+  if (!isPermanent) { selectedDays.clear(); dayGrid.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active')); }
   updatePreview();
 }
 
@@ -172,7 +198,7 @@ function cellHTML(key, depts) {
   return '<div class="tag-cell ' + (depts.has(key) ? 'trained' : '') + '">' + key + '</div>';
 }
 
-function buildTagHTML(name, username, manager, depts, photo, perm) {
+function buildTagHTML(name, username, manager, depts, photo, perm, days) {
   const photoHTML = photo
     ? '<div class="tag-photo"><img src="' + photo + '"></div>'
     : '<div class="tag-photo"><div class="tag-photo-placeholder">👤</div></div>';
@@ -189,6 +215,7 @@ function buildTagHTML(name, username, manager, depts, photo, perm) {
     + '<span class="tag-username">' + (username || 'id') + '</span>'
     + '</div>'
     + (manager ? '<div class="tag-manager">MGR: ' + manager + '</div>' : '')
+    + (perm && days && days.size ? '<div class="tag-days">' + [...days].sort((a,b)=>DAYS.indexOf(a)-DAYS.indexOf(b)).map(d => '<span class="tag-day-pill">' + d + '</span>').join('') + '</div>' : '')
     + '</div>'
     + '</div>'
     + '</div>';
@@ -199,7 +226,7 @@ function updatePreview() {
     document.getElementById('fullName').value,
     document.getElementById('username').value,
     document.getElementById('manager').value,
-    selectedDepts, photoDataUrl, isPermanent
+    selectedDepts, photoDataUrl, isPermanent, isPermanent ? selectedDays : null
   );
 }
 
@@ -219,7 +246,8 @@ function saveTag() {
     manager:  document.getElementById('manager').value.trim(),
     depts:    new Set(selectedDepts),
     photo:    photoDataUrl,   // store full data URL — embedded in docx
-    permanent: isPermanent
+    permanent: isPermanent,
+    days: isPermanent ? new Set(selectedDays) : null
   });
   renderSaved();
   showToast('✓ Saved: ' + name);
@@ -241,7 +269,7 @@ function renderSaved() {
     wrap.style.cssText = 'display:inline-flex;flex-direction:column;gap:4px;align-items:center;';
     const tagDiv = document.createElement('div');
     tagDiv.style.cssText = 'transform:scale(0.5);transform-origin:top left;margin-bottom:-60px;margin-right:-192px;';
-    tagDiv.innerHTML = buildTagHTML(tag.name, tag.username, tag.manager, tag.depts, tag.photo, tag.permanent);
+    tagDiv.innerHTML = buildTagHTML(tag.name, tag.username, tag.manager, tag.depts, tag.photo, tag.permanent, tag.days);
     const del = document.createElement('button');
     del.textContent = '✕ Remove';
     del.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:.6rem;background:transparent;border:1px solid #444;color:#888;padding:2px 8px;cursor:pointer;border-radius:2px;margin-top:58px;';
@@ -495,6 +523,12 @@ function tagDocxXml(tag, imgRid) {
       ? '<w:r><w:rPr><w:b/><w:color w:val="000000"/><w:sz w:val="22"/><w:szCs w:val="22"/>' +
         '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
         '<w:t xml:space="preserve">  MGR: ' + escXml(tag.manager) + '</w:t></w:r>'
+      : '') +
+    (tag.days && tag.days.size
+      ? '<w:r><w:rPr><w:b/><w:color w:val="1A1A1A"/><w:sz w:val="20"/><w:szCs w:val="20"/>' +
+        '<w:highlight w:val="yellow"/>' +
+        '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
+        '<w:t xml:space="preserve">  ' + [...tag.days].sort((a,b)=>['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(a)-['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(b)).join(' · ') + '</w:t></w:r>'
       : '') +
     '</w:p></w:tc>';
 
