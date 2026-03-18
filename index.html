@@ -90,7 +90,7 @@
     <div class="panel">
       <h2>Associate Info</h2>
       <label>Last Name, First Name</label>
-      <input type="text" id="fullName" placeholder="e.g. Smith, John" oninput="updatePreview()">
+      <input type="text" id="fullName" placeholder="e.g. Snith, John" oninput="updatePreview()">
       <label>Username / ID</label>
       <input type="text" id="username" placeholder="e.g. jsmith" oninput="updatePreview()">
       <label>Manager Name</label>
@@ -106,7 +106,7 @@
       </div>
       <label>Photo (optional)</label>
       <div class="photo-area" id="photoArea" onclick="document.getElementById('photoInput').click()">
-        <div class="photo-placeholder"><div class="icon">📷</div><div>Click to upload</div></div>
+        <div class="photo-placeholder"><div class="icon">📷</div><div>Click to upload</div><div style="margin-top:3px;font-size:.6rem;opacity:.6;">or Ctrl+V to paste</div></div>
       </div>
       <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(event)">
       <label>Departments Trained In</label>
@@ -184,6 +184,11 @@ function setType(type) {
 function handlePhoto(e) {
   const file = e.target.files[0];
   if (!file) return;
+  loadPhotoFile(file);
+}
+
+function loadPhotoFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
   const reader = new FileReader();
   reader.onload = ev => {
     photoDataUrl = ev.target.result;
@@ -192,6 +197,17 @@ function handlePhoto(e) {
   };
   reader.readAsDataURL(file);
 }
+
+// Paste anywhere on the page to set photo
+document.addEventListener('paste', e => {
+  const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      loadPhotoFile(item.getAsFile());
+      break;
+    }
+  }
+});
 
 function cellHTML(key, depts) {
   if (!key) return '<div class="tag-cell" style="background:transparent;"></div>';
