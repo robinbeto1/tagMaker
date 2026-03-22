@@ -90,11 +90,11 @@
     <div class="panel">
       <h2>Associate Info</h2>
       <label>Last Name, First Name</label>
-      <input type="text" id="fullName" placeholder="e.g. Smith, John" oninput="updatePreview()">
+      <input type="text" id="fullName" placeholder="e.g. patel, jinalben" oninput="updatePreview()">
       <label>Username / ID</label>
-      <input type="text" id="username" placeholder="e.g. jsmit" oninput="updatePreview()">
+      <input type="text" id="username" placeholder="e.g. jinalbee" oninput="updatePreview()">
       <label>Manager Name</label>
-      <input type="text" id="manager" placeholder="e.g. brrnvd" oninput="updatePreview()">
+      <input type="text" id="manager" placeholder="e.g. smith, john" oninput="updatePreview()">
       <label>Employment Type</label>
       <div class="type-wrap">
         <button id="typeTemp" class="type-btn on-green" onclick="setType('temp')">🟢 Seasonal / Temp</button>
@@ -467,7 +467,7 @@ function tagDocxXml(tag, imgRid) {
       ? '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
       : '<w:right w:val="single" w:sz="3" w:space="0" w:color="' + BASE + '"/>';
     return '<w:tc><w:tcPr>' +
-      '<w:tcW w:w="840" w:type="dxa"/>' +
+      '<w:tcW w:w="720" w:type="dxa"/>' +
       '<w:tcBorders><w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
       '<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
       '<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>' + rb + '</w:tcBorders>' +
@@ -494,7 +494,7 @@ function tagDocxXml(tag, imgRid) {
           '<w:t>[ photo ]</w:t></w:r></w:p>'
     );
     return '<w:tc><w:tcPr>' +
-      '<w:tcW w:w="900" w:type="dxa"/>' +
+      '<w:tcW w:w="783" w:type="dxa"/>' +
       (cont ? '<w:vMerge/>' : '<w:vMerge w:val="restart"/>') +
       '<w:tcBorders>' + nb() + '</w:tcBorders>' +
       '<w:shd w:val="clear" w:color="auto" w:fill="' + BASE + '"/>' +
@@ -510,7 +510,7 @@ function tagDocxXml(tag, imgRid) {
   // Row 3: photo col continues (vMerge), name spans only the 6 dept cols
   const photoColRow3 =
     '<w:tc><w:tcPr>' +
-    '<w:tcW w:w="900" w:type="dxa"/>' +
+    '<w:tcW w:w="783" w:type="dxa"/>' +
     '<w:vMerge/>' +
     '<w:tcBorders>' + nb() + '</w:tcBorders>' +
     '<w:shd w:val="clear" w:color="auto" w:fill="' + BASE + '"/>' +
@@ -519,7 +519,7 @@ function tagDocxXml(tag, imgRid) {
   const nameRow =
     photoColRow3 +
     '<w:tc><w:tcPr>' +
-    '<w:tcW w:w="5040" w:type="dxa"/>' +
+    '<w:tcW w:w="4320" w:type="dxa"/>' +
     '<w:gridSpan w:val="6"/>' +
     '<w:tcBorders>' + nb() + '</w:tcBorders>' +
     '<w:shd w:val="clear" w:color="auto" w:fill="' + BASE + '"/>' +
@@ -552,7 +552,7 @@ function tagDocxXml(tag, imgRid) {
 
   return '<w:tbl>' +
     '<w:tblPr>' +
-    '<w:tblW w:w="5940" w:type="dxa"/>' +
+    '<w:tblW w:w="5103" w:type="dxa"/>' +
     '<w:tblBorders>' +
     '<w:top w:val="single" w:sz="12" w:space="0" w:color="000000"/>' +
     '<w:left w:val="single" w:sz="12" w:space="0" w:color="000000"/>' +
@@ -564,9 +564,9 @@ function tagDocxXml(tag, imgRid) {
     '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar>' +
     '</w:tblPr>' +
     '<w:tblGrid>' +
-    '<w:gridCol w:w="900"/>' +
-    '<w:gridCol w:w="840"/><w:gridCol w:w="840"/><w:gridCol w:w="840"/>' +
-    '<w:gridCol w:w="840"/><w:gridCol w:w="840"/><w:gridCol w:w="840"/>' +
+    '<w:gridCol w:w="783"/>' +
+    '<w:gridCol w:w="720"/><w:gridCol w:w="720"/><w:gridCol w:w="720"/>' +
+    '<w:gridCol w:w="720"/><w:gridCol w:w="720"/><w:gridCol w:w="720"/>' +
     '</w:tblGrid>' +
     '<w:tr><w:trPr><w:trHeight w:val="280" w:hRule="exact"/></w:trPr>' + photoCol(false) + r1 + '</w:tr>' +
     '<w:tr><w:trPr><w:trHeight w:val="280" w:hRule="exact"/></w:trPr>' + photoCol(true)  + r2 + '</w:tr>' +
