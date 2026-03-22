@@ -574,14 +574,89 @@ function tagDocxXml(tag, imgRid) {
     '</w:tbl>';
 }
 
-// Build document.xml — needs tag list + array of imgRids (one per tag, null if no photo)
+// Build document.xml — 2 tags side by side per row
 function buildDocumentXml(tags, imgRids) {
-  // Add required namespaces for images
-  const body = tags.map((tag, i) => {
-    const spacer = i > 0 ? '<w:p><w:pPr><w:spacing w:before="120" w:after="0"/></w:pPr></w:p>' : '';
-    const pgBreak = (i < tags.length - 1 && (i + 1) % 8 === 0)
+  // Pair up tags into rows of 2
+  const rows = [];
+  for (let i = 0; i < tags.length; i += 2) {
+    rows.push({ left: i, right: i + 1 < tags.length ? i + 1 : null });
+  }
+
+  function wrapInCell(xmlContent, width) {
+    return '<w:tc><w:tcPr>' +
+      '<w:tcW w:w="' + width + '" w:type="dxa"/>' +
+      '<w:tcBorders>' +
+      '<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '</w:tcBorders>' +
+      '<w:tcMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>' +
+      '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tcMar>' +
+      '</w:tcPr>' +
+      xmlContent +
+      '</w:tc>';
+  }
+
+  function spacerCell() {
+    return '<w:tc><w:tcPr>' +
+      '<w:tcW w:w="360" w:type="dxa"/>' +
+      '<w:tcBorders>' +
+      '<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '</w:tcBorders>' +
+      '</w:tcPr><w:p/></w:tc>';
+  }
+
+  function emptyTagCell() {
+    return '<w:tc><w:tcPr>' +
+      '<w:tcW w:w="5103" w:type="dxa"/>' +
+      '<w:tcBorders>' +
+      '<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>' +
+      '</w:tcBorders>' +
+      '</w:tcPr><w:p/></w:tc>';
+  }
+
+  const body = rows.map((row, ri) => {
+    const leftXml  = tagDocxXml(tags[row.left],  imgRids[row.left]);
+    const rightXml = row.right !== null
+      ? tagDocxXml(tags[row.right], imgRids[row.right])
+      : null;
+
+    // Wrap each tag's XML as a single-cell paragraph inside outer table cell
+    const leftCell  = wrapInCell('<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr></w:p>' + leftXml, 5103);
+    const rightCell = rightXml
+      ? wrapInCell('<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr></w:p>' + rightXml, 5103)
+      : emptyTagCell();
+
+    const outerRow = '<w:tr>' + leftCell + spacerCell() + rightCell + '</w:tr>';
+    const outerTable =
+      '<w:tbl>' +
+      '<w:tblPr>' +
+      '<w:tblW w:w="10566" w:type="dxa"/>' +
+      '<w:tblBorders>' +
+      '<w:top w:val="none"/><w:left w:val="none"/>' +
+      '<w:bottom w:val="none"/><w:right w:val="none"/>' +
+      '<w:insideH w:val="none"/><w:insideV w:val="none"/>' +
+      '</w:tblBorders>' +
+      '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>' +
+      '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar>' +
+      '</w:tblPr>' +
+      '<w:tblGrid>' +
+      '<w:gridCol w:w="5103"/><w:gridCol w:w="360"/><w:gridCol w:w="5103"/>' +
+      '</w:tblGrid>' +
+      outerRow +
+      '</w:tbl>';
+
+    const spacer = ri > 0 ? '<w:p><w:pPr><w:spacing w:before="120" w:after="0"/></w:pPr></w:p>' : '';
+    const pgBreak = (ri < rows.length - 1 && (ri + 1) % 4 === 0)
       ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : '';
-    return spacer + tagDocxXml(tag, imgRids[i]) + pgBreak;
+    return spacer + outerTable + pgBreak;
   }).join('');
 
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
