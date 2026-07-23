@@ -73,6 +73,11 @@
   .day-btn{padding:5px 2px;border:1px solid var(--border);background:#111;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:0.62rem;cursor:pointer;border-radius:2px;transition:all 0.12s;text-align:center;user-select:none;}
   .day-btn.active{background:#f5c842;border-color:#d4a800;color:#1a1a1a;font-weight:700;}
 
+  .import-panel{max-width:1080px;margin:0 auto 20px;}
+  .import-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .btn-auto{width:auto;margin-top:0;padding:10px 18px;}
+  .import-hint{margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);line-height:1.7;}
+  .import-hint b{color:var(--text);}
   .saved-wrap{width:100%;}
   .saved-header{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
   .saved-tags{display:flex;flex-wrap:wrap;gap:16px;}
@@ -84,6 +89,18 @@
 
 <h1>Name Tag Maker</h1>
 <p class="subtitle">Associate Training Badge Generator</p>
+
+<div class="panel import-panel">
+  <h2>Bulk Import (CSV)</h2>
+  <div class="import-row">
+    <button class="btn btn-green btn-auto" onclick="document.getElementById('csvInput').click()">⬆ Upload CSV &amp; Generate Badges</button>
+    <input type="file" id="csvInput" accept=".csv,text/csv" onchange="handleCsvInput(event)">
+    <button class="btn btn-outline btn-auto" onclick="downloadSampleCsv()">⬇ Download Sample Template</button>
+  </div>
+  <div class="import-hint">
+    Columns: <b>Name</b> (Last, First — required), Username, Manager, Type (temp/perm), Days (only for perm, e.g. "Mon,Tue,Wed"), Departments (e.g. "PICK,WS,STOW"). Header row is optional. Photos aren't included via CSV — generated badges use the placeholder icon.
+  </div>
+</div>
 
 <div class="layout">
   <div>
@@ -294,6 +311,131 @@ function renderSaved() {
     wrap.appendChild(del);
     container.appendChild(wrap);
   });
+}
+
+// ─── CSV bulk import ──────────────────────────────────────────────────────────
+
+const CSV_HEADERS = ['name','username','manager','type','days','departments'];
+const DAY_LOOKUP = {};
+DAYS.forEach(d => { DAY_LOOKUP[d.toLowerCase()] = d; DAY_LOOKUP[d.slice(0,3).toLowerCase()] = d; });
+const DEPT_LOOKUP = new Set(DEPARTMENTS.map(d => d.toUpperCase()));
+
+// Minimal RFC4180-ish CSV parser: handles quoted fields, embedded commas/quotes, CRLF/LF.
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ',') {
+      row.push(field); field = '';
+    } else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(field); field = '';
+      rows.push(row); row = [];
+    } else {
+      field += c;
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => c && c.trim() !== ''));
+}
+
+function csvRowsToTags(rows) {
+  if (!rows.length) return { tags: [], skipped: 0 };
+
+  const firstRow = rows[0].map(c => c.trim().toLowerCase());
+  const hasHeader = firstRow.some(c => CSV_HEADERS.includes(c));
+  const idx = {};
+  if (hasHeader) {
+    CSV_HEADERS.forEach(h => { idx[h] = firstRow.indexOf(h); });
+  } else {
+    idx.name = 0; idx.username = 1; idx.manager = 2; idx.type = 3; idx.days = 4; idx.departments = 5;
+  }
+  const dataRows = hasHeader ? rows.slice(1) : rows;
+
+  const tags = [];
+  let skipped = 0;
+
+  const cell = (r, key) => (idx[key] >= 0 && r[idx[key]] != null) ? r[idx[key]].trim() : '';
+
+  for (const r of dataRows) {
+    const name = cell(r, 'name');
+    if (!name) { skipped++; continue; }
+
+    const typeRaw = cell(r, 'type').toLowerCase();
+    const permanent = ['perm', 'permanent', 'blue'].includes(typeRaw);
+
+    const depts = new Set();
+    cell(r, 'departments').split(/[,;|]/).map(s => s.trim().toUpperCase()).filter(Boolean)
+      .forEach(d => { if (DEPT_LOOKUP.has(d)) depts.add(d); });
+
+    let days = null;
+    if (permanent) {
+      days = new Set();
+      cell(r, 'days').split(/[,;|]/).map(s => s.trim().toLowerCase()).filter(Boolean)
+        .forEach(d => { if (DAY_LOOKUP[d]) days.add(DAY_LOOKUP[d]); });
+    }
+
+    tags.push({
+      name,
+      username: cell(r, 'username'),
+      manager: cell(r, 'manager'),
+      depts,
+      photo: null,
+      permanent,
+      days
+    });
+  }
+
+  return { tags, skipped };
+}
+
+function handleCsvInput(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const rows = parseCSV(ev.target.result);
+      const { tags, skipped } = csvRowsToTags(rows);
+      if (!tags.length) {
+        alert('No valid rows found. Make sure the CSV has a Name column (e.g. "Smith, John").');
+        return;
+      }
+      savedTags.push(...tags);
+      renderSaved();
+      showToast('✓ Generated ' + tags.length + ' badge' + (tags.length === 1 ? '' : 's') + (skipped ? ' (' + skipped + ' row' + (skipped === 1 ? '' : 's') + ' skipped)' : ''));
+    } catch (err) {
+      console.error(err);
+      alert('Could not parse CSV: ' + err.message);
+    }
+  };
+  reader.onerror = () => alert('Could not read the file.');
+  reader.readAsText(file);
+}
+
+function downloadSampleCsv() {
+  const sample =
+    'Name,Username,Manager,Type,Days,Departments\n' +
+    '"Smith, John",jsmith,brrnvd,temp,,"PICK,WS,STOW"\n' +
+    '"Doe, Jane",jdoe,brrnvd,perm,"Mon,Tue,Wed,Thu,Fri","PACK,PP,PG"\n';
+  const blob = new Blob([sample], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'badge-template.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
 }
 
 // ─── Native ZIP writer ────────────────────────────────────────────────────────
