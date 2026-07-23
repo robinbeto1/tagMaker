@@ -72,6 +72,9 @@
   .tag-day-pill{background:#f5c842;color:#1a1a1a;font-family:'IBM Plex Mono',monospace;font-size:.36rem;font-weight:700;padding:0px 3px;border-radius:1px;letter-spacing:.2px;}
   .day-btn{padding:5px 2px;border:1px solid var(--border);background:#111;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:0.62rem;cursor:pointer;border-radius:2px;transition:all 0.12s;text-align:center;user-select:none;}
   .day-btn.active{background:#f5c842;border-color:#d4a800;color:#1a1a1a;font-weight:700;}
+  .tag-barcode{margin-top:2px;background:#fff;border-radius:1px;padding:2px 3px 1px;display:inline-flex;flex-direction:column;align-items:center;}
+  .tag-barcode img{display:block;height:16px;image-rendering:pixelated;}
+  .tag-barcode-id{font-family:'IBM Plex Mono',monospace;font-size:.4rem;letter-spacing:.5px;color:#111;line-height:1.3;}
 
   .import-panel{max-width:1080px;margin:0 auto 20px;}
   .import-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
@@ -98,7 +101,7 @@
     <button class="btn btn-outline btn-auto" onclick="downloadSampleCsv()">⬇ Download Sample Template</button>
   </div>
   <div class="import-hint">
-    Columns: <b>Name</b> (Last, First — required), Username, Manager, Type (temp/perm), Days (only for perm, e.g. "Mon,Tue,Wed"), Departments (e.g. "PICK,WS,STOW"). Header row is optional. Photos aren't included via CSV — generated badges use the placeholder icon.
+    Columns: <b>Name</b> (Last, First — required), Username, Manager, Type (temp/perm — legacy, ignored if Agency is present), Days (only when nil/direct hire, e.g. "Mon,Tue,Wed"), Departments (e.g. "PICK,WS,STOW"), EmployeeID (optional — auto-fetches badge photo + generates a scannable barcode; only works while connected to the Amazon corporate network/VPN with SSO), Agency (leave blank or "nil" for direct hire → stays blue; any agency name → green).
   </div>
 </div>
 
@@ -113,19 +116,21 @@
       <label>Manager Name</label>
       <input type="text" id="manager" placeholder="e.g. brrnvd" oninput="updatePreview()">
       <label>Employment Type</label>
-      <div class="type-wrap">
-        <button id="typeTemp" class="type-btn on-green" onclick="setType('temp')">🟢 Seasonal / Temp</button>
-        <button id="typePerm" class="type-btn" onclick="setType('perm')">🔵 Permanent</button>
-      </div>
-      <div id="dayWrap" style="display:none;margin-bottom:12px;">
+      <label>Agency (leave blank or "nil" if direct hire)</label>
+      <input type="text" id="agency" placeholder='e.g. Integrity Staffing (blank/"nil" = direct hire, stays blue)' oninput="handleAgencyInput()">
+      <div id="dayWrap" style="display:block;margin-bottom:12px;">
         <label>Work Days</label>
         <div id="dayGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;"></div>
       </div>
+      <label>Employee ID (for Amazon photo lookup)</label>
+      <input type="text" id="employeeId" placeholder="e.g. 112291080" oninput="updatePreview()">
       <label>Photo (optional)</label>
       <div class="photo-area" id="photoArea" onclick="document.getElementById('photoInput').click()">
         <div class="photo-placeholder"><div class="icon">📷</div><div>Click to upload</div><div style="margin-top:3px;font-size:.6rem;opacity:.6;">or Ctrl+V to paste</div></div>
       </div>
       <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(event)">
+      <button class="btn btn-outline" id="fetchPhotoBtn" onclick="fetchPhotoForForm()">🌐 Fetch Photo from Amazon</button>
+      <div id="fetchStatus" style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);margin-top:6px;min-height:14px;"></div>
       <label>Departments Trained In</label>
       <div class="dept-grid" id="deptGrid"></div>
       <button class="btn btn-green" onclick="saveTag()">＋ Save Tag</button>
@@ -158,7 +163,7 @@ const ROW2 = ['PACK','PP','PG','AFM','SINGLES','RECIEVE'];
 let selectedDepts = new Set();
 let photoDataUrl = null;
 let savedTags = [];
-let isPermanent = false;
+let isPermanent = true;
 let selectedDays = new Set();
 
 const grid = document.getElementById('deptGrid');
@@ -189,10 +194,16 @@ DAYS.forEach(d => {
   dayGrid.appendChild(btn);
 });
 
-function setType(type) {
-  isPermanent = type === 'perm';
-  document.getElementById('typeTemp').className = 'type-btn' + (!isPermanent ? ' on-green' : '');
-  document.getElementById('typePerm').className = 'type-btn' + (isPermanent ? ' on-blue' : '');
+// Color is now driven by the Agency field: blank or "nil" (any case) = direct
+// hire, tag stays blue/permanent; any agency name entered = green.
+function isNilAgency(v) {
+  const t = (v || '').trim().toLowerCase();
+  return t === '' || t === 'nil';
+}
+
+function handleAgencyInput() {
+  const val = document.getElementById('agency').value;
+  isPermanent = isNilAgency(val);
   document.getElementById('dayWrap').style.display = isPermanent ? 'block' : 'none';
   if (!isPermanent) { selectedDays.clear(); dayGrid.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active')); }
   updatePreview();
@@ -215,6 +226,50 @@ function loadPhotoFile(file) {
   reader.readAsDataURL(file);
 }
 
+// ─── Amazon badge photo lookup ────────────────────────────────────────────────
+// Only succeeds when this browser is on the Amazon corp network/VPN with an
+// active SSO session AND the endpoint permits the browser fetch. Off-network
+// or unauthenticated, this will reject — callers must handle that.
+async function fetchBadgePhotoDataUrl(employeeId) {
+  const id = (employeeId || '').trim();
+  if (!id) throw new Error('No employee ID provided');
+  const url = 'https://badgephotos.corp.amazon.com/?employeeid=' + encodeURIComponent(id);
+  const res = await fetch(url, { credentials: 'include', mode: 'cors' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const blob = await res.blob();
+  if (!blob.type.startsWith('image/')) throw new Error('Response was not an image (not on corp network / not signed in?)');
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Could not read image data'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function fetchPhotoForForm() {
+  const id = document.getElementById('employeeId').value.trim();
+  const statusEl = document.getElementById('fetchStatus');
+  const btn = document.getElementById('fetchPhotoBtn');
+  if (!id) { statusEl.textContent = '⚠ Enter an Employee ID first.'; statusEl.style.color = 'var(--accent)'; return; }
+  btn.disabled = true;
+  statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = 'Fetching...';
+  try {
+    const dataUrl = await fetchBadgePhotoDataUrl(id);
+    photoDataUrl = dataUrl;
+    document.getElementById('photoArea').innerHTML = '<img src="' + dataUrl + '">';
+    updatePreview();
+    statusEl.textContent = '✓ Photo loaded';
+    statusEl.style.color = 'var(--green-light)';
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = '✗ Could not fetch (need Amazon network + SSO): ' + err.message;
+    statusEl.style.color = '#e06c6c';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 // Paste anywhere on the page to set photo
 document.addEventListener('paste', e => {
   const items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -231,10 +286,14 @@ function cellHTML(key, depts) {
   return '<div class="tag-cell ' + (depts.has(key) ? 'trained' : '') + '">' + key + '</div>';
 }
 
-function buildTagHTML(name, username, manager, depts, photo, perm, days) {
+function buildTagHTML(name, username, manager, depts, photo, perm, days, employeeId) {
   const photoHTML = photo
     ? '<div class="tag-photo"><img src="' + photo + '"></div>'
     : '<div class="tag-photo"><div class="tag-photo-placeholder">👤</div></div>';
+  const barcodeSrc = employeeId ? barcodeDataUrl(employeeId, 1.4, 34) : null;
+  const barcodeHTML = barcodeSrc
+    ? '<div class="tag-barcode"><img src="' + barcodeSrc + '"><div class="tag-barcode-id">' + employeeId + '</div></div>'
+    : '';
   return '<div class="name-tag' + (perm ? ' blue-tag' : '') + '">'
     + photoHTML
     + '<div class="tag-body">'
@@ -249,6 +308,7 @@ function buildTagHTML(name, username, manager, depts, photo, perm, days) {
     + '</div>'
     + (manager ? '<div class="tag-manager">' + manager + '</div>' : '')
     + (perm && days && days.size ? '<div class="tag-days">' + [...days].sort((a,b)=>DAYS.indexOf(a)-DAYS.indexOf(b)).map(d => '<span class="tag-day-pill">' + d + '</span>').join('') + '</div>' : '')
+    + barcodeHTML
     + '</div>'
     + '</div>'
     + '</div>';
@@ -259,7 +319,8 @@ function updatePreview() {
     document.getElementById('fullName').value,
     document.getElementById('username').value,
     document.getElementById('manager').value,
-    selectedDepts, photoDataUrl, isPermanent, isPermanent ? selectedDays : null
+    selectedDepts, photoDataUrl, isPermanent, isPermanent ? selectedDays : null,
+    document.getElementById('employeeId').value.trim()
   );
 }
 
@@ -279,6 +340,8 @@ function saveTag() {
     manager:  document.getElementById('manager').value.trim(),
     depts:    new Set(selectedDepts),
     photo:    photoDataUrl,   // store full data URL — embedded in docx
+    employeeId: document.getElementById('employeeId').value.trim(),
+    agency:   document.getElementById('agency').value.trim(),
     permanent: isPermanent,
     days: isPermanent ? new Set(selectedDays) : null
   });
@@ -302,7 +365,7 @@ function renderSaved() {
     wrap.style.cssText = 'display:inline-flex;flex-direction:column;gap:4px;align-items:center;';
     const tagDiv = document.createElement('div');
     tagDiv.style.cssText = 'transform:scale(0.5);transform-origin:top left;margin-bottom:-60px;margin-right:-192px;';
-    tagDiv.innerHTML = buildTagHTML(tag.name, tag.username, tag.manager, tag.depts, tag.photo, tag.permanent, tag.days);
+    tagDiv.innerHTML = buildTagHTML(tag.name, tag.username, tag.manager, tag.depts, tag.photo, tag.permanent, tag.days, tag.employeeId);
     const del = document.createElement('button');
     del.textContent = '✕ Remove';
     del.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:.6rem;background:transparent;border:1px solid #444;color:#888;padding:2px 8px;cursor:pointer;border-radius:2px;margin-top:58px;';
@@ -315,7 +378,7 @@ function renderSaved() {
 
 // ─── CSV bulk import ──────────────────────────────────────────────────────────
 
-const CSV_HEADERS = ['name','username','manager','type','days','departments'];
+const CSV_HEADERS = ['name','username','manager','type','days','departments','employeeid','agency'];
 const DAY_LOOKUP = {};
 DAYS.forEach(d => { DAY_LOOKUP[d.toLowerCase()] = d; DAY_LOOKUP[d.slice(0,3).toLowerCase()] = d; });
 const DEPT_LOOKUP = new Set(DEPARTMENTS.map(d => d.toUpperCase()));
@@ -356,7 +419,7 @@ function csvRowsToTags(rows) {
   if (hasHeader) {
     CSV_HEADERS.forEach(h => { idx[h] = firstRow.indexOf(h); });
   } else {
-    idx.name = 0; idx.username = 1; idx.manager = 2; idx.type = 3; idx.days = 4; idx.departments = 5;
+    idx.name = 0; idx.username = 1; idx.manager = 2; idx.type = 3; idx.days = 4; idx.departments = 5; idx.employeeid = 6; idx.agency = 7;
   }
   const dataRows = hasHeader ? rows.slice(1) : rows;
 
@@ -370,7 +433,12 @@ function csvRowsToTags(rows) {
     if (!name) { skipped++; continue; }
 
     const typeRaw = cell(r, 'type').toLowerCase();
-    const permanent = ['perm', 'permanent', 'blue'].includes(typeRaw);
+    const agencyRaw = cell(r, 'agency');
+    // Agency column takes precedence when the CSV provides it: blank/"nil" = direct hire (blue).
+    // Falls back to the legacy Type column (temp/perm) for older CSV templates.
+    const permanent = (hasHeader && idx.agency >= 0)
+      ? isNilAgency(agencyRaw)
+      : ['perm', 'permanent', 'blue'].includes(typeRaw);
 
     const depts = new Set();
     cell(r, 'departments').split(/[,;|]/).map(s => s.trim().toUpperCase()).filter(Boolean)
@@ -389,6 +457,8 @@ function csvRowsToTags(rows) {
       manager: cell(r, 'manager'),
       depts,
       photo: null,
+      employeeId: cell(r, 'employeeid'),
+      agency: agencyRaw,
       permanent,
       days
     });
@@ -411,9 +481,11 @@ function handleCsvInput(e) {
         alert('No valid rows found. Make sure the CSV has a Name column (e.g. "Smith, John").');
         return;
       }
+      const startIdx = savedTags.length;
       savedTags.push(...tags);
       renderSaved();
       showToast('✓ Generated ' + tags.length + ' badge' + (tags.length === 1 ? '' : 's') + (skipped ? ' (' + skipped + ' row' + (skipped === 1 ? '' : 's') + ' skipped)' : ''));
+      bulkFetchPhotos(startIdx);
     } catch (err) {
       console.error(err);
       alert('Could not parse CSV: ' + err.message);
@@ -423,11 +495,44 @@ function handleCsvInput(e) {
   reader.readAsText(file);
 }
 
+// Sequentially fetch badge photos for imported rows that have an Employee ID.
+// Runs one at a time (avoids hammering the internal server) and re-renders
+// as each photo lands, so you see progress instead of waiting on all of them.
+async function bulkFetchPhotos(startIdx) {
+  const candidates = [];
+  for (let i = startIdx; i < savedTags.length; i++) {
+    if (savedTags[i].employeeId) candidates.push(i);
+  }
+  if (!candidates.length) return;
+
+  let ok = 0, fail = 0;
+  showToast('Fetching ' + candidates.length + ' photo' + (candidates.length === 1 ? '' : 's') + ' from Amazon...');
+
+  for (const i of candidates) {
+    const tag = savedTags[i];
+    if (!tag) continue; // row may have been removed mid-fetch
+    try {
+      tag.photo = await fetchBadgePhotoDataUrl(tag.employeeId);
+      ok++;
+    } catch (err) {
+      console.warn('Photo fetch failed for employeeId ' + tag.employeeId + ':', err.message);
+      fail++;
+    }
+    renderSaved();
+  }
+
+  if (fail === 0) {
+    showToast('✓ Fetched ' + ok + ' photo' + (ok === 1 ? '' : 's'));
+  } else {
+    showToast('✓ ' + ok + ' photo' + (ok === 1 ? '' : 's') + ' fetched, ✗ ' + fail + ' failed (need Amazon network + SSO)');
+  }
+}
+
 function downloadSampleCsv() {
   const sample =
-    'Name,Username,Manager,Type,Days,Departments\n' +
-    '"Smith, John",jsmith,brrnvd,temp,,"PICK,WS,STOW"\n' +
-    '"Doe, Jane",jdoe,brrnvd,perm,"Mon,Tue,Wed,Thu,Fri","PACK,PP,PG"\n';
+    'Name,Username,Manager,Type,Days,Departments,EmployeeID,Agency\n' +
+    '"Smith, John",jsmith,brrnvd,temp,,"PICK,WS,STOW",112291080,Integrity Staffing\n' +
+    '"Doe, Jane",jdoe,brrnvd,perm,"Mon,Tue,Wed,Thu,Fri","PACK,PP,PG",112291081,nil\n';
   const blob = new Blob([sample], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -510,6 +615,55 @@ function buildZip(files) {
   return out;
 }
 
+// ─── Barcode (Code 39) ────────────────────────────────────────────────────────
+// Standard Code 39 bar patterns (9 elements per char: bar,space,bar,space,...
+// starting with a bar; '1' = wide element, '0' = narrow element).
+const CODE39_PATTERNS = {
+  '0':'000110100','1':'100100001','2':'001100001','3':'101100000','4':'000110001',
+  '5':'100110000','6':'001110000','7':'000100101','8':'100100100','9':'001100100',
+  '-':'010000101','*':'010010100'
+};
+
+// Returns a flat list of {isBar, wide} elements for "*CODE*" including the
+// single narrow inter-character gap. Non-digit characters are dropped since
+// employee IDs are numeric (a dash is also supported, just in case).
+function code39Elements(code) {
+  const chars = ('*' + String(code).replace(/[^0-9-]/g, '') + '*').split('');
+  const elements = [];
+  chars.forEach((ch, idx) => {
+    const pattern = CODE39_PATTERNS[ch];
+    if (!pattern) return;
+    for (let i = 0; i < 9; i++) elements.push({ isBar: i % 2 === 0, wide: pattern[i] === '1' });
+    if (idx < chars.length - 1) elements.push({ isBar: false, wide: false }); // inter-character gap
+  });
+  return elements;
+}
+
+// Renders a Code 39 barcode for `code` to a canvas and returns its data URL.
+function barcodeDataUrl(code, moduleWidth, height) {
+  moduleWidth = moduleWidth || 2;
+  height = height || 46;
+  const elements = code39Elements(code);
+  if (elements.length < 9 * 3) return null; // nothing valid to encode
+  const quietModules = 10;
+  const totalUnits = elements.reduce((s, e) => s + (e.wide ? 3 : 1), 0);
+  const quietPx = quietModules * moduleWidth;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(totalUnits * moduleWidth + quietPx * 2);
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000';
+  let x = quietPx;
+  elements.forEach(el => {
+    const w = (el.wide ? 3 : 1) * moduleWidth;
+    if (el.isBar) ctx.fillRect(x, 0, w, height);
+    x += w;
+  });
+  return canvas.toDataURL('image/png');
+}
+
 // ─── Photo helpers ────────────────────────────────────────────────────────────
 
 // Convert dataURL → { base64: string, mediaType: string, ext: string }
@@ -585,7 +739,7 @@ function drawingXml(imgRid, widthEmu, heightEmu) {
     '</w:drawing>';
 }
 
-function tagDocxXml(tag, imgRid) {
+function tagDocxXml(tag, imgRid, barcodeRid) {
   const perm    = tag.permanent;
   const BASE    = perm ? '1A4A8A' : '2D7A3A';
   const DARK    = perm ? '0D2E5E' : '1A5C26';
@@ -690,6 +844,13 @@ function tagDocxXml(tag, imgRid) {
         '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
         '<w:t>' + [...tag.days].sort((a,b)=>['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(a)-['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(b)).join(' · ') + '</w:t></w:r></w:p>'
       : '') +
+    (tag.employeeId && barcodeRid
+      ? '<w:p><w:pPr><w:spacing w:before="20" w:after="0"/></w:pPr>' +
+        '<w:r>' + drawingXml(barcodeRid, 1500000, 200000) + '</w:r>' +
+        '<w:r><w:rPr><w:color w:val="FFFFFF"/><w:sz w:val="12"/><w:szCs w:val="12"/>' +
+        '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>' +
+        '<w:t xml:space="preserve">  ' + escXml(tag.employeeId) + '</w:t></w:r></w:p>'
+      : '') +
     '</w:tc>';
 
   return '<w:tbl>' +
@@ -717,7 +878,7 @@ function tagDocxXml(tag, imgRid) {
 }
 
 // Build document.xml — 2 tags side by side per row
-function buildDocumentXml(tags, imgRids) {
+function buildDocumentXml(tags, imgRids, barcodeRids) {
   // Pair up tags into rows of 2
   const rows = [];
   for (let i = 0; i < tags.length; i += 2) {
@@ -765,9 +926,9 @@ function buildDocumentXml(tags, imgRids) {
   }
 
   const body = rows.map((row, ri) => {
-    const leftXml  = tagDocxXml(tags[row.left],  imgRids[row.left]);
+    const leftXml  = tagDocxXml(tags[row.left],  imgRids[row.left], barcodeRids[row.left]);
     const rightXml = row.right !== null
-      ? tagDocxXml(tags[row.right], imgRids[row.right])
+      ? tagDocxXml(tags[row.right], imgRids[row.right], barcodeRids[row.right])
       : null;
 
     // Wrap each tag's XML as a single-cell paragraph inside outer table cell
@@ -884,10 +1045,13 @@ async function downloadDocx() {
     const enc = s => new TextEncoder().encode(s);
     const zipFiles = [];
 
-    // Process photos — resize and convert to bytes
-    const imgRids   = [];  // relationship IDs per tag (null if no photo)
-    const imgPaths  = [];  // relative paths in word/ folder
-    const imgExts   = [];  // extensions for content types
+    // Process photos and barcodes — resize/generate and convert to bytes
+    const imgRids      = [];  // relationship IDs per tag for the photo (null if no photo)
+    const barcodeRids   = []; // relationship IDs per tag for the barcode (null if no employee ID)
+    const allRids      = [];  // every image rid, in the exact order added to zipFiles
+    const allPaths     = [];  // matching paths, same order
+    const allExts      = [];  // matching extensions, same order
+    let ridCounter = 2; // rId1 is reserved for settings.xml
 
     for (let i = 0; i < savedTags.length; i++) {
       const tag = savedTags[i];
@@ -896,11 +1060,10 @@ async function downloadDocx() {
         const resized = await resizePhoto(tag.photo, 200, 250);
         const parsed  = parseDataUrl(resized);
         if (parsed) {
-          const rid  = 'rId' + (i + 2);   // rId2, rId3, ...
+          const rid  = 'rId' + (ridCounter++);
           const path = 'media/img' + i + '.' + parsed.ext;
           imgRids.push(rid);
-          imgPaths.push(path);
-          imgExts.push(parsed.ext);
+          allRids.push(rid); allPaths.push(path); allExts.push(parsed.ext);
           zipFiles.push({ name: 'word/' + path, data: base64ToBytes(parsed.base64) });
         } else {
           imgRids.push(null);
@@ -908,16 +1071,28 @@ async function downloadDocx() {
       } else {
         imgRids.push(null);
       }
+
+      if (tag.employeeId) {
+        const barcodeUrl = barcodeDataUrl(tag.employeeId, 2, 60);
+        const parsed = barcodeUrl ? parseDataUrl(barcodeUrl) : null;
+        if (parsed) {
+          const rid  = 'rId' + (ridCounter++);
+          const path = 'media/barcode' + i + '.' + parsed.ext;
+          barcodeRids.push(rid);
+          allRids.push(rid); allPaths.push(path); allExts.push(parsed.ext);
+          zipFiles.push({ name: 'word/' + path, data: base64ToBytes(parsed.base64) });
+        } else {
+          barcodeRids.push(null);
+        }
+      } else {
+        barcodeRids.push(null);
+      }
     }
 
-    // Filter only tags that actually have a rid
-    const usedRids  = imgRids.filter(Boolean);
-    const usedPaths = imgPaths;
-
-    zipFiles.push({ name: '[Content_Types].xml',          data: enc(buildContentTypes(imgExts)) });
+    zipFiles.push({ name: '[Content_Types].xml',          data: enc(buildContentTypes(allExts)) });
     zipFiles.push({ name: '_rels/.rels',                  data: enc(ROOT_RELS) });
-    zipFiles.push({ name: 'word/document.xml',            data: enc(buildDocumentXml(savedTags, imgRids)) });
-    zipFiles.push({ name: 'word/_rels/document.xml.rels', data: enc(buildWordRels(usedRids, usedPaths)) });
+    zipFiles.push({ name: 'word/document.xml',            data: enc(buildDocumentXml(savedTags, imgRids, barcodeRids)) });
+    zipFiles.push({ name: 'word/_rels/document.xml.rels', data: enc(buildWordRels(allRids, allPaths)) });
     zipFiles.push({ name: 'word/settings.xml',            data: enc(SETTINGS) });
 
     const zip = buildZip(zipFiles);
